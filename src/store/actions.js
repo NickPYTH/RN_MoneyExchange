@@ -23,3 +23,17 @@ export const changeDate = (date) => {
         payload: date,
     };
 };
+
+export const loadCurrencies = (currencies) => {
+    return {
+        type: "LOAD_CURRENCIES",
+        payload: currencies,
+    };
+};
+
+export const putCoefficient = (coefficient) => {
+    return {
+        type: "PUT_COEFFICIENT",
+        payload: coefficient,
+    };
+};
