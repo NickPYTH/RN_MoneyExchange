@@ -53,23 +53,10 @@ const Data = (state = INITIAL_STATE, action) => {
                 date: getHumanDate(action.payload),
             };
         case "LOAD_CURRENCIES":
-            let prepCurrencies = [];
-            let soloCurrencies = [];
-            JSON.parse(action.payload).data.map((pair)=>{
-                prepCurrencies.push(pair.slice(0,3));
-                prepCurrencies.push(pair.slice(3,6));
-            })
-
-            prepCurrencies.map((el)=>{
-                if (soloCurrencies.indexOf(el) === -1){
-                    soloCurrencies.push(el);
-                }
-            });
-
             return {
                 ...state,
                 isLoad: true,
-                currencies: soloCurrencies,
+                currencies: action.payload.concat(['RUB']),
             };
         case "PUT_COEFFICIENT":
             return {

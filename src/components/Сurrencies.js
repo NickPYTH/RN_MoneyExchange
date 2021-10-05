@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Picker, Platform, TouchableOpacity, Text} from 'react-native';
+import {StyleSheet, View, Picker, Platform, TouchableOpacity, Text, ToastAndroid} from 'react-native';
 import {THEME} from "../themes";
 import AppText from "./UI/AppText";
 import { connect } from "react-redux";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {bindActionCreators} from "redux";
 import {changeDate, loadCurrencies, putCoefficient} from "../store/actions";
+import {Http} from '../http';
 
 const Home = props => {
     const [error, setError] = useState(null);
@@ -24,16 +25,91 @@ const Home = props => {
             method: 'GET',
             redirect: 'follow'
         };
-        fetch(`https://currate.ru/api/?get=rates&pairs=${value+selectedValue2}&key=833ca67cd4a5b4da166fa6bca7730082&date=2021-09-01T15:00:00`, requestOptions)
+        fetch(`https://www.cbr-xml-daily.ru/archive/${date.getFullYear()}/${Number(date.getMonth()+1).toString().length === 1 ? '0'+date.getMonth().toString() : Number(date.getMonth()+1).toString()}/${date.getDate().toString().length === 1 ? '0'+date.getDate().toString() : date.getDate()}/daily_json.js`, requestOptions)
             .then(response => response.text())
             .then(
                 (result) => {
-                    let resultJSON = JSON.parse(result);
-                    console.log(result)
-                    props.putCoefficient(resultJSON.data[value+selectedValue2])
+                    result = JSON.parse(result);
+                    if (result.error === undefined){
+                        setSelectedValue1(value);
+                        if (selectedValue2 === value) {
+
+                            props.putCoefficient(1);
+                        }
+                        else if (value === "RUB") {
+
+                            props.putCoefficient(result.Valute[selectedValue2].Value);
+                        }
+                        else if (selectedValue2 === "RUB"){
+                            props.putCoefficient(result.Valute[value].Value);
+                        }
+                        else {
+                            props.putCoefficient(result.Valute[value].Value / result.Valute[selectedValue2].Value );
+                        }
+                    }
+                    else{
+                        setShow(Platform.OS === 'ios');
+                        let tmp = new Date();
+                        if (tmp.getFullYear() === date.getFullYear() && tmp.getMonth() === date.getMonth() && tmp.getDate() === date.getDate()){}else ToastAndroid.show(result.explanation, ToastAndroid.LONG);
+                        setSelectedValue1(value);
+                        setDate(new Date());
+                        fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
+                            .then(response => response.text())
+                            .then(
+                                (result) => {
+                                    result = JSON.parse(result);
+                                    if (selectedValue2 === value) {
+                                        props.putCoefficient(1);
+                                    }
+                                    else if (value === "RUB") {
+
+                                        props.putCoefficient(result.Valute[selectedValue2].Value);
+                                    }
+                                    else if (selectedValue2 === "RUB"){
+                                        props.putCoefficient(result.Valute[value].Value);
+                                    }
+                                    else {
+                                        props.putCoefficient(result.Valute[value].Value / result.Valute[selectedValue2].Value);
+                                    }
+                                },
+                                (error) => {
+                                    setIsLoaded(true);
+                                    setError(error);
+                                }
+                            )
+                            .catch(error => console.log('error', error));
+                    }
                 },
                 (error) => {
+                    setSelectedValue1(value);
+                    setDate(new Date());
+                    fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
+                        .then(response => response.text())
+                        .then(
+                            (result) => {
+                                result = JSON.parse(result);
+                                if (selectedValue2 === value) {
+                                    props.putCoefficient(1);
+                                }
+                                else if (value === "RUB") {
 
+                                    props.putCoefficient(result.Valute[selectedValue2].Value);
+                                }
+                                else if (selectedValue2 === "RUB"){
+
+                                    props.putCoefficient(result.Valute[value].Value);
+                                }
+                                else {
+
+                                    props.putCoefficient(result.Valute[selectedValue2].Value / result.Valute[value].Value);
+                                }
+                            },
+                            (error) => {
+                                setIsLoaded(true);
+                                setError(error);
+                            }
+                        )
+                        .catch(error => console.log('error', error));
                 }
             )
             .catch(error => console.log('error', error));
@@ -46,16 +122,87 @@ const Home = props => {
             method: 'GET',
             redirect: 'follow'
         };
-        fetch(`https://currate.ru/api/?get=rates&pairs=${selectedValue1+value}&key=833ca67cd4a5b4da166fa6bca7730082&date=2021-09-01T15:00:00`, requestOptions)
+        fetch(`https://www.cbr-xml-daily.ru/archive/${date.getFullYear()}/${Number(date.getMonth()+1).toString().length === 1 ? '0'+date.getMonth().toString() : Number(date.getMonth()+1).toString()}/${date.getDate().toString().length === 1 ? '0'+date.getDate().toString() : date.getDate()}/daily_json.js`, requestOptions)
             .then(response => response.text())
             .then(
                 (result) => {
-                    let resultJSON = JSON.parse(result);
-                    console.log(result)
-                    props.putCoefficient(resultJSON.data[selectedValue1+value])
+                    result = JSON.parse(result);
+                    if (result.error === undefined){
+                        setSelectedValue2(value);
+                        if (selectedValue1 === value) {
+
+                            props.putCoefficient(1);
+                        }
+                        else if (value === "RUB") {
+
+                            props.putCoefficient(result.Valute[selectedValue1].Value);
+                        }
+                        else if (selectedValue1 === "RUB"){
+                            props.putCoefficient(result.Valute[value].Value);
+                        }
+                        else {
+                            props.putCoefficient(result.Valute[selectedValue1].Value / result.Valute[value].Value);
+                        }
+                    }
+                    else{
+                        setShow(Platform.OS === 'ios');
+                        let tmp = new Date();
+                        if (tmp.getFullYear() === date.getFullYear() && tmp.getMonth() === date.getMonth() && tmp.getDate() === date.getDate()){}else ToastAndroid.show(result.explanation, ToastAndroid.LONG);
+                        setSelectedValue2(value);
+                        setDate(new Date());
+                        fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
+                            .then(response => response.text())
+                            .then(
+                                (result) => {
+                                    result = JSON.parse(result);
+                                    if (selectedValue1 === value) {
+                                        props.putCoefficient(1);
+                                    }
+                                    else if (value === "RUB") {
+                                        props.putCoefficient(result.Valute[selectedValue1].Value);
+                                    }
+                                    else if (selectedValue1 === "RUB"){
+                                        props.putCoefficient(result.Valute[value].Value);
+                                    }
+                                    else {
+                                        props.putCoefficient(result.Valute[selectedValue1].Value / result.Valute[value].Value);
+                                    }
+                                },
+                                (error) => {
+                                    setIsLoaded(true);
+                                    setError(error);
+                                }
+                            )
+                            .catch(error => console.log('error', error));
+                    }
                 },
                 (error) => {
-
+                    setSelectedValue2(value);
+                    setDate(new Date());
+                    fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
+                        .then(response => response.text())
+                        .then(
+                            (result) => {
+                                result = JSON.parse(result);
+                                if (selectedValue1 === value) {
+                                    props.putCoefficient(1);
+                                }
+                                else if (value === "RUB") {
+                                    props.putCoefficient(result.Valute[selectedValue1].Value);
+                                }
+                                else if (selectedValue1 === "RUB"){
+                                    props.putCoefficient(result.Valute[value].Value);
+                                }
+                                else {
+                                    props.putCoefficient(result.Valute[selectedValue1].Value / result.Valute[value].Value);
+                                }
+                            },
+                            (error) => {
+                                setIsLoaded(true);
+                                setError(error);
+                            }
+                        )
+                        .catch(error => console.log('error', error));
                 }
             )
             .catch(error => console.log('error', error));
@@ -68,13 +215,15 @@ const Home = props => {
             method: 'GET',
             redirect: 'follow'
         };
-        fetch(`https://currate.ru/api/?get=currency_list&key=833ca67cd4a5b4da166fa6bca7730082`, requestOptions)
+        fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
             .then(response => response.text())
             .then(
                 (result) => {
+                    result = JSON.parse(result);
                     setIsLoaded(true);
-                    setCurrencies(result);
-                    props.loadCurrencies(result);
+                    setCurrencies(Object.keys(result.Valute));
+                    props.loadCurrencies(Object.keys(result.Valute));
+                    props.putCoefficient(result.Valute.USD.Value)
                 },
                 (error) => {
                     setIsLoaded(true);
@@ -84,15 +233,64 @@ const Home = props => {
             .catch(error => console.log('error', error));
     }, [])
 
-    useEffect(() => {
-
-    })
-
     const onChange = (event, selectedDate) => {
         const currentDate = selectedDate || date;
-        setShow(Platform.OS === 'ios');
-        setDate(currentDate);
-        props.changeDate(date);
+        const requestOptions = {
+            method: 'GET',
+            redirect: 'follow'
+        };
+         fetch(`https://www.cbr-xml-daily.ru/archive/${currentDate.getFullYear()}/${Number(currentDate.getMonth()+1).toString().length === 1 ? '0'+currentDate.getMonth().toString() : Number(currentDate.getMonth()+1).toString()}/${currentDate.getDate().toString().length === 1 ? '0'+currentDate.getDate().toString() : currentDate.getDate()}/daily_json.js`, requestOptions)
+            .then(response => response.text())
+            .then(
+                (result) => {
+                    result = JSON.parse(result);
+                    if (result.error === undefined){
+                        setShow(Platform.OS === 'ios');
+                        setDate(currentDate);
+                        props.changeDate(currentDate);
+                        if (selectedValue1 === selectedValue2) {
+                            props.putCoefficient(1);
+                        }
+                        else if (selectedValue1 === "RUB"){
+                            props.putCoefficient(result.Valute[selectedValue2].Value);
+                        }
+                    }
+                    else{
+                        setShow(Platform.OS === 'ios');
+                        let tmp = new Date();
+                        if (tmp.getFullYear() === currentDate.getFullYear() && tmp.getMonth() === currentDate.getMonth() && tmp.getDate() === currentDate.getDate()){}else ToastAndroid.show(result.explanation, ToastAndroid.LONG);
+                        setSelectedValue2(selectedValue2);
+                        setDate(tmp);
+                        fetch(`https://www.cbr-xml-daily.ru/daily_json.js`, requestOptions)
+                            .then(response => response.text())
+                            .then(
+                                (result) => {
+                                    result = JSON.parse(result);
+                                    if (selectedValue1 === selectedValue2) {
+                                        props.putCoefficient(1);
+                                    }
+                                    else if (selectedValue2 === "RUB") {
+                                        props.putCoefficient(result.Valute[selectedValue1].Value);
+                                    }
+                                    else if (selectedValue1 === "RUB"){
+                                        props.putCoefficient(result.Valute[selectedValue2].Value);
+                                    }
+                                    else {
+                                        props.putCoefficient(result.Valute[selectedValue1].Value / result.Valute[selectedValue2].Value);
+                                    }
+                                },
+                                (error) => {
+                                    setIsLoaded(true);
+                                    setError(error);
+                                }
+                            )
+                            .catch(error => console.log('error', error));
+                    }
+                },
+                (error) => {
+                    console.log('failed ', error);
+                    ToastAndroid.show(error, ToastAndroid.LONG);
+                });
     };
 
     const showMode = (currentMode) => {
@@ -106,7 +304,7 @@ const Home = props => {
 
     const getHumanDate = (a) => {
         let day = a.getDate().toString();
-        let month = a.getMonth().toString();
+        let month = (Number(a.getMonth())+1).toString();
         let year = a.getFullYear().toString();
         if (day.length === 1)
             day = '0'+day;
@@ -126,17 +324,16 @@ const Home = props => {
             <View>
                 <View style={{marginTop: 40, marginBottom: 10}}>
                     <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
-                        <Text>{props.data.coefficient}</Text>
                         <Picker
                             selectedValue={selectedValue1}
                             style={{height: 50, width: 100, color: THEME.MAIN_COLOR, fontSize: 36}}
                             onValueChange={(itemValue, itemIndex) => {
                                 firstChangeHandler(itemValue);
-                                setSelectedValue1(itemValue);
+
                             }}
                         >
                             {
-                                props.data.currencies.map((currency)=> <Picker.Item label={currency} value={currency}/>)
+                                props.data.currencies.map((currency)=> <Picker.Item key={Date.now()} label={currency} value={currency}/>)
                             }
 
                             <Picker.Item label="RUB" value="RUB"/>
@@ -152,14 +349,14 @@ const Home = props => {
                             style={{height: 50, width: 100, color: THEME.MAIN_COLOR, fontSize: 36}}
                             onValueChange={(itemValue, itemIndex) => {
                                 secondChangeHandler(itemValue);
-                                setSelectedValue2(itemValue);
+
                             }}
                         >
                             {
-                                props.data.currencies.map((currency)=> <Picker.Item label={currency} value={currency}/>)
+                                props.data.currencies.map((currency)=> <Picker.Item key={Date.now()} label={currency} value={currency}/>)
                             }
                         </Picker>
-                        <AppText style={{color: THEME.MAIN_COLOR, fontSize: 28, width: 190, overflowX: 'hidden'}}
+                        <AppText style={{color: THEME.MAIN_COLOR, fontSize: 28, width: 190}}
                                  value={(props.data.coefficient * props.data.value).toFixed(2)}/>
                     </View>
                 </View>
