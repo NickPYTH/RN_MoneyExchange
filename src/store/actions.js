@@ -1,39 +1,71 @@
-export const addValue = (value) => {
-    return {
-        type: "ADD_VALUE",
-        payload: value,
-    };
+import {
+  ADD_DIGIT,
+  CLEAR_INPUT,
+  FETCH_COURSE_BY_DATE,
+  FETCH_DAILY_COURSES,
+  REMOVE_DIGIT,
+  SET_COURSES,
+  SET_DATE,
+  SET_FROM_CURRENCY,
+  SET_TO_CURRENCY,
+} from "./types";
+
+export const addDigit = (digit) => {
+  return {
+    type: ADD_DIGIT,
+    digit,
+  };
 };
 
-export const cutValue = () => {
-    return {
-        type: "CUT_VALUE",
-    };
+export const removeDigit = () => {
+  return {
+    type: REMOVE_DIGIT,
+  };
 };
 
-export const fullCutValue = () => {
-    return {
-        type: "FULL_CUT_VALUE",
-    };
+export const clearInput = () => {
+  return {
+    type: CLEAR_INPUT,
+  };
 };
 
-export const changeDate = (date) => {
-    return {
-        type: "CHANGE_DATE",
-        payload: date,
-    };
+export const fetchDailyCourses = () => {
+  return {
+    type: FETCH_DAILY_COURSES,
+  };
 };
 
-export const loadCurrencies = (currencies) => {
-    return {
-        type: "LOAD_CURRENCIES",
-        payload: currencies,
-    };
+export const setCourses = (courses) => {
+  return {
+    type: SET_COURSES,
+    courses,
+  };
 };
 
-export const putCoefficient = (coefficient) => {
-    return {
-        type: "PUT_COEFFICIENT",
-        payload: coefficient,
-    };
+export const setToCurrency = (currency) => {
+  return {
+    type: SET_TO_CURRENCY,
+    currency,
+  };
+};
+
+export const setFromCurrency = (currency) => {
+  return {
+    type: SET_FROM_CURRENCY,
+    currency,
+  };
+};
+
+export const setDate = (date) => {
+  return {
+    type: SET_DATE,
+    date,
+  };
+};
+
+export const fetchCourseByDate = (date) => {
+  return {
+    type: FETCH_COURSE_BY_DATE,
+    date,
+  };
 };

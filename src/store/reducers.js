@@ -1,73 +1,79 @@
-import {combineReducers} from "redux";
-
-const getHumanDate = (a) => {
-    let day = a.getDate().toString();
-    let month = a.getMonth().toString();
-    let year = a.getFullYear().toString();
-    if (day.length === 1)
-        day = '0'+day;
-    if (month.length === 1)
-        month = '0'+month;
-    return day+'.'+month+'.'+year;
-}
+import {
+  ADD_DIGIT,
+  CLEAR_INPUT,
+  REMOVE_DIGIT,
+  SET_COURSES,
+  SET_DATE,
+  SET_FROM_CURRENCY,
+  SET_TO_CURRENCY,
+} from "./types";
 
 const INITIAL_STATE = {
-    value: 100,
-    date: getHumanDate(new Date()),
-    coefficient: 0.7,
-    isLoad: false,
-    currencies: null,
+  inputValue: "",
+  currencies_list: null,
+  from_currency: null,
+  to_currency: null,
+  date: null,
 };
 
-const Data = (state = INITIAL_STATE, action) => {
-    let tmp = null
-    switch (action.type) {
-        case "ADD_VALUE":
-            tmp = state.value.toString()
-            if (tmp.length > 7){
-                return {
-                    ...state
-                }
-            }
-            return {
-                ...state,
-                value: Number(state.value.toString().concat(action.payload.toString())),
-            };
-        case "CUT_VALUE":
-            if (state.value.toString().length !== 1)
-                tmp = Number(state.value.toString().slice(0, -1));
-            else
-                tmp = 0;
-            return {
-                ...state,
-                value: tmp,
-            };
-        case "FULL_CUT_VALUE":
-            return {
-                ...state,
-                value: 0,
-            };
-        case "CHANGE_DATE":
-            return {
-                ...state,
-                date: getHumanDate(action.payload),
-            };
-        case "LOAD_CURRENCIES":
-            return {
-                ...state,
-                isLoad: true,
-                currencies: action.payload.concat(['RUB']),
-            };
-        case "PUT_COEFFICIENT":
-            return {
-                ...state,
-                coefficient: action.payload,
-            };
-        default:
-            return state;
-    }
+export const reducer = (state = INITIAL_STATE, action) => {
+  switch (action.type) {
+    case ADD_DIGIT:
+      return {
+        ...state,
+        inputValue: state.inputValue + action.digit,
+      };
+    case REMOVE_DIGIT:
+      return {
+        ...state,
+        inputValue: state.inputValue.slice(0, -1),
+      };
+    case CLEAR_INPUT:
+      return {
+        ...state,
+        inputValue: "",
+      };
+    case SET_COURSES:
+      if (action.courses.code === 404) {
+        return {
+          ...state,
+          date: new Date(),
+        };
+      } else {
+        const currencies_list = Object.keys(action.courses.Valute).map(
+          (name) => action.courses.Valute[name]
+        );
+        return {
+          ...state,
+          currencies_list,
+          from_currency: currencies_list.find(
+            (currency) => currency.CharCode === "USD"
+          ),
+          to_currency: currencies_list.find(
+            (currency) => currency.CharCode === "EUR"
+          ),
+        };
+      }
+    case SET_FROM_CURRENCY:
+      return {
+        ...state,
+        from_currency: state.currencies_list.find(
+          (currency) => currency.CharCode === action.currency
+        ),
+      };
+    case SET_TO_CURRENCY:
+      return {
+        ...state,
+        to_currency: state.currencies_list.find(
+          (currency) => currency.CharCode === action.currency
+        ),
+      };
+    case SET_DATE:
+      return {
+        ...state,
+        date: action.date,
+      };
+    default:
+      return state;
+  }
 };
-
-export default combineReducers({
-    data: Data,
-});
